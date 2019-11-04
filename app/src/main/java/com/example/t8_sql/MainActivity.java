@@ -1,11 +1,15 @@
-package com.example.t7_picture_listview;
+package com.example.t8_sql;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.room.Room;
+import androidx.room.RoomDatabase;
 
 import android.content.Context;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.Network;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -25,6 +29,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import java.util.ArrayList;
 
+import static androidx.room.Room.databaseBuilder;
+
 public class MainActivity extends AppCompatActivity {
 
     private ConnectivityManager cm;
@@ -34,11 +40,18 @@ public class MainActivity extends AppCompatActivity {
     private EditText searchText;
     private ArrayList<Picture> lista = new ArrayList<>();
     private ownAdapter adapter;
+    private Tietokanta tietokanta;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        //RoomDatabase.Builder<Tietokanta> xD = databaseBuilder(getApplicationContext(), Tietokanta.class, Tietokanta.NIMI);
+        //xD.build();
+
+
+
 
         adapter = new ownAdapter(this, R.layout.listtemplate, lista);
         ListView listview = findViewById(R.id.listView);
@@ -80,6 +93,7 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(context, "No network available.", Toast.LENGTH_SHORT).show();
         }
     }
+
     private void doJsonQuery(String tag) {
         if (queue == null) {
             queue = Volley.newRequestQueue(this);
@@ -107,6 +121,7 @@ public class MainActivity extends AppCompatActivity {
                 });
         queue.add(jsonObjectRequest);
     }
+
     public void getDataFromResponse (JSONObject response) throws JSONException {
 
         Gson gson = new Gson();
@@ -114,16 +129,33 @@ public class MainActivity extends AppCompatActivity {
         Picture pict = gson.fromJson(response.toString(), Picture.class);
 
         lista.add(pict);
+
+        populateWithTestData(tietokanta,pict.getLicense(),pict.getOwner(),pict.getUrl());
+
         adapter.notifyDataSetChanged();
 
         Toast.makeText(context, "Data loaded", Toast.LENGTH_SHORT).show();
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     private boolean testInternet(Context context) {
 
         final Network[] allNetworks;
         cm = (ConnectivityManager) context.getSystemService(CONNECTIVITY_SERVICE);
         allNetworks = cm.getAllNetworks();
         return (allNetworks != null);
+    }
+
+    private static MyEntity addUser(final Tietokanta db, MyEntity user) {
+        db.myTableDao().InsertMyEntity(user);
+        return user;
+    }
+
+    private static void populateWithTestData(Tietokanta db, String license, String owner, String url) {
+        MyEntity user = new MyEntity();
+        user.setOwner(owner);
+        user.setLicense(license);
+        user.setUrl(url);
+        addUser(db, user);
     }
 }
