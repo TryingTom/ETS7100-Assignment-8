@@ -41,16 +41,14 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<Picture> lista = new ArrayList<>();
     private ownAdapter adapter;
     private Tietokanta tietokanta;
+    private DatabaseHelper mDBhelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        //RoomDatabase.Builder<Tietokanta> xD = databaseBuilder(getApplicationContext(), Tietokanta.class, Tietokanta.NIMI);
-        //xD.build();
-
-
+        new ListDataActivity(); // supposedly throw everything what's in the database here... if it worked.
 
 
         adapter = new ownAdapter(this, R.layout.listtemplate, lista);
@@ -129,15 +127,18 @@ public class MainActivity extends AppCompatActivity {
         Picture pict = gson.fromJson(response.toString(), Picture.class);
 
         lista.add(pict);
+        dbAddData(pict.getOwner(),pict.getLicense(),pict.getUrl());
 
-        populateWithTestData(tietokanta,pict.getLicense(),pict.getOwner(),pict.getUrl());
+        //populateWithTestData(tietokanta,pict.getLicense(),pict.getOwner(),pict.getUrl());
+
+
 
         adapter.notifyDataSetChanged();
 
         Toast.makeText(context, "Data loaded", Toast.LENGTH_SHORT).show();
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+
     private boolean testInternet(Context context) {
 
         final Network[] allNetworks;
@@ -150,12 +151,24 @@ public class MainActivity extends AppCompatActivity {
         db.myTableDao().InsertMyEntity(user);
         return user;
     }
-
+    /*
     private static void populateWithTestData(Tietokanta db, String license, String owner, String url) {
         MyEntity user = new MyEntity();
         user.setOwner(owner);
         user.setLicense(license);
         user.setUrl(url);
         addUser(db, user);
+    }*/
+
+    public void dbAddData (String mOwner, String mLicense, String mURL){
+        boolean insertData = mDBhelper.addData(mOwner, mLicense, mURL);
+
+        if (insertData){
+            Toast.makeText(MainActivity.this, "Data inserted successfully", Toast.LENGTH_SHORT)
+                    .show();
+        } else{
+            Toast.makeText(MainActivity.this, "Something went wrong :(", Toast.LENGTH_SHORT)
+                    .show();
+        }
     }
 }

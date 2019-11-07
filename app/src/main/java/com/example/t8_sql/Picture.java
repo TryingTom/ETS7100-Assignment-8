@@ -28,6 +28,11 @@ public class Picture {
     @SerializedName("tagMode")
     private String tagMode;
 
+    public Picture(String url, String license, String owner) {
+        this.url = url;
+        this.license = license;
+        this.owner = owner;
+    }
 
     public Picture(String url, String license, String owner, int width, int height, String filter, String tags, String tagMode) {
         this.url = url;
